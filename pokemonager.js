@@ -2,18 +2,15 @@
   class Pokemonager {
     // This should return an array of all the names of n Pokemon from the Pokemon API.
     findNames(n) {
-      const pokemonNames = fetch(
+      const pokemonNames = axios.get(
         `https://pokeapi.co/api/v2/pokemon/?limit=${n}`
       );
       return pokemonNames
-        .then((response) => {
-          return response.json();
-        })
         .catch((err) => {
           throw err;
         })
         .then((json) => {
-          return json.results.map((pokemon) => pokemon.name);
+          return json.data.results.map((pokemon) => pokemon.name);
         });
     }
 
@@ -22,21 +19,18 @@
     findUnderWeight(weight) {
       let promiseArray = [];
       for (let i = 1; i <= 10; i++) {
-        promiseArray.push(fetch(`https://pokeapi.co/api/v2/pokemon/${i}`));
+        promiseArray.push(axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`));
       }
 
-      return Promise.all(promiseArray)
-        .then((responseArray) => {
-          let newArray = responseArray.map((response) => {
-            return response.json();
-          });
-          return Promise.all(newArray);
-        })
-        .then((pokemons) => {
-          return pokemons.filter((pokemon) => {
+      return Promise.all(promiseArray).then((pokemons) => {
+        return pokemons
+          .map((responseObj) => {
+            return responseObj.data;
+          })
+          .filter((pokemon) => {
             return pokemon.weight < weight;
           });
-        });
+      });
     }
   }
 
